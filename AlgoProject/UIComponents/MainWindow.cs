@@ -27,8 +27,8 @@ namespace AlgoProject.UIComponents
         Border brdSurround;
 
         //Separators
-        Separator separatorLeft;
-        Separator separatorRight;
+        GridSplitter splitterLeft;
+        GridSplitter splitterRight;
 
         //titleBar
         Rectangle rctTitleBar;
@@ -104,16 +104,16 @@ namespace AlgoProject.UIComponents
             lblTitle.MouseLeftButtonDown += titleBar_MouseLeftButtonDown;
 
             //setting left separator's properties
-            separatorLeft = new Separator() { VerticalAlignment = VerticalAlignment.Stretch, HorizontalAlignment = HorizontalAlignment.Center, Width = 2, Foreground = Brushes.Black };
-            Grid.SetRow(separatorLeft, 1);
-            Grid.SetRowSpan(separatorLeft, 2);
-            Grid.SetColumn(separatorLeft, 2);
+            splitterLeft = new GridSplitter() { VerticalAlignment = VerticalAlignment.Stretch, HorizontalAlignment = HorizontalAlignment.Center, Width = 2, Foreground = Brushes.Black, Background=Brushes.Black };
+            Grid.SetRow(splitterLeft, 1);
+            Grid.SetRowSpan(splitterLeft, 2);
+            Grid.SetColumn(splitterLeft, 2);
 
             //setting right separator's properties
-            separatorRight = new Separator() { VerticalAlignment = VerticalAlignment.Stretch, HorizontalAlignment = HorizontalAlignment.Center, Width = 2, Foreground = Brushes.Black };
-            Grid.SetRow(separatorRight, 1);
-            Grid.SetColumn(separatorRight, 4);
-            Grid.SetRowSpan(separatorRight, 2);
+            splitterRight = new GridSplitter() { VerticalAlignment = VerticalAlignment.Stretch, HorizontalAlignment = HorizontalAlignment.Center, Width = 2, Foreground = Brushes.Black, Background=Brushes.Black };
+            Grid.SetRow(splitterRight, 1);
+            Grid.SetColumn(splitterRight, 4);
+            Grid.SetRowSpan(splitterRight, 2);
 
             //setting status bar's properties
             rctStatusBar = new Rectangle() { Fill = Brushes.Black, MinHeight = 20 };
@@ -212,8 +212,8 @@ namespace AlgoProject.UIComponents
 
             grdMain.Children.Add(rctTitleBar);
             grdMain.Children.Add(lblTitle);
-            grdMain.Children.Add(separatorLeft);
-            grdMain.Children.Add(separatorRight);
+            grdMain.Children.Add(splitterLeft);
+            grdMain.Children.Add(splitterRight);
             grdMain.Children.Add(rctStatusBar);
             brdFloorSurround.Child = lstFloor;
             grdMain.Children.Add(brdFloorSurround);

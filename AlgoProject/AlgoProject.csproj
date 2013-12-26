@@ -40,10 +40,10 @@
   <ItemGroup>
     <Compile Include="App\Program.cs" />
     <Compile Include="Models\Coordinate.cs" />
+    <Compile Include="Models\Edge.cs" />
     <Compile Include="Models\FloorBacklog.cs" />
     <Compile Include="Models\Tile.cs" />
     <Compile Include="Models\TileType.cs" />
-    <Compile Include="Models\Utilities.cs" />
     <Compile Include="UIComponents\DimensionDialogBox.cs" />
     <Compile Include="UIComponents\MainWindow.cs" />
   </ItemGroup>
@@ -82,7 +82,12 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Page Include="UIComponents\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

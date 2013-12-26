@@ -9,6 +9,10 @@ namespace AlgoProject.Models
     {
         Clear,
         WayPoint,
-        Obstacle
+        Obstacle,
+        InitialPoint,
+        Destination,
+        
+
     }
 }

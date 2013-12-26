@@ -1,6 +1,7 @@
 ﻿using AlgoProject.Models;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -124,7 +125,7 @@ namespace AlgoProject.UIComponents
             //OK and cancel button click
             btnOk.Click += ((s, eve) =>
             {
-                Utilities.DrawFloor(Utilities.MaxCoordinates);
+                
                 ((MainWindow)Owner).Dimensions = new Coordinate() { X = Int32.Parse(txtX.Text), Y = Int32.Parse(txtY.Text) };
                 this.Owner.IsEnabled = true;
                 this.DialogResult = true;
@@ -158,13 +159,13 @@ namespace AlgoProject.UIComponents
             }
             else if (point.HasValue && point.Value.X * point.Value.Y >= 1000000)
             {
-                setValidationViewer(lblException, btnOk, "More than 100000 boxes will have a huge impect on performance.", Visibility.Visible, true);
+                setValidationViewer(lblException, btnOk, "More than 100000 boxes will have a huge impact on performance.", Visibility.Visible, true);
             }
             else
             {
                 setValidationViewer(lblException, btnOk, "Specify the input in correct format.", Visibility.Visible, false);
             }
-
+            
         }
 
 

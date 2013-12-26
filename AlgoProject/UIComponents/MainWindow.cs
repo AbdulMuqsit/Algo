@@ -13,8 +13,10 @@ using System.Windows.Threading;
 
 namespace AlgoProject.UIComponents
 {
-    public class MainWindow : TransparentWindow
+    public partial class MainWindow : Window
     {
+
+
 
         //Grid's related fields
         Grid grdMain = new Grid();
@@ -22,7 +24,7 @@ namespace AlgoProject.UIComponents
         ColumnDefinition columnDefiniton;
 
         TileType? selectedType;
-
+        bool edgeType = false;
         //Border around the window
         Border brdSurround;
 
@@ -44,6 +46,9 @@ namespace AlgoProject.UIComponents
         //Floor's related fields
         //floorBacklog will be the in memory floor
         FloorBacklog floorBacklog;
+
+        Tile firstPoint = null;
+
         ZoomableCanvas cvsFloor;
         //Left Panel
         StackPanel stkLeft, stkRight, stkToolbar;
@@ -59,7 +64,8 @@ namespace AlgoProject.UIComponents
         TextBox txtDebug;
         TextBox txtleft;
         StackPanel stkLeftInternal;
-        Rectangle rctClear, rctWayPoint, rctHurdle;
+        Rectangle rctClear, rctWayPoint, rctHurdle, rctInitialPoint, rctDestination;
+        Line linEdge;
 
         //Right Panel
 
@@ -71,7 +77,7 @@ namespace AlgoProject.UIComponents
 
         public MainWindow()
         {
-
+            InitializeComponent();
             //Adding definitions
             addMainGridDefinitions();
 
@@ -83,6 +89,11 @@ namespace AlgoProject.UIComponents
 
             this.Loaded += Window_Loaded;
 
+        }
+
+        void loaded(object sender, RoutedEventArgs e)
+        {
+            cvsFloor = sender as ZoomableCanvas;
         }
 
         #region Methods
@@ -104,13 +115,13 @@ namespace AlgoProject.UIComponents
             lblTitle.MouseLeftButtonDown += titleBar_MouseLeftButtonDown;
 
             //setting left separator's properties
-            splitterLeft = new GridSplitter() { VerticalAlignment = VerticalAlignment.Stretch, HorizontalAlignment = HorizontalAlignment.Center, Width = 2, Foreground = Brushes.Black, Background=Brushes.Black };
+            splitterLeft = new GridSplitter() { VerticalAlignment = VerticalAlignment.Stretch, HorizontalAlignment = HorizontalAlignment.Center, Width = 2, Foreground = Brushes.Black, Background = Brushes.Black };
             Grid.SetRow(splitterLeft, 1);
             Grid.SetRowSpan(splitterLeft, 2);
             Grid.SetColumn(splitterLeft, 2);
 
             //setting right separator's properties
-            splitterRight = new GridSplitter() { VerticalAlignment = VerticalAlignment.Stretch, HorizontalAlignment = HorizontalAlignment.Center, Width = 2, Foreground = Brushes.Black, Background=Brushes.Black };
+            splitterRight = new GridSplitter() { VerticalAlignment = VerticalAlignment.Stretch, HorizontalAlignment = HorizontalAlignment.Center, Width = 2, Foreground = Brushes.Black, Background = Brushes.Black };
             Grid.SetRow(splitterRight, 1);
             Grid.SetColumn(splitterRight, 4);
             Grid.SetRowSpan(splitterRight, 2);
@@ -132,6 +143,15 @@ namespace AlgoProject.UIComponents
 
             rctHurdle = new Rectangle() { MinHeight = 20, MinWidth = 20, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Fill = Brushes.Black, Stroke = Brushes.White, Margin = new Thickness(5), ToolTip = "Obstacle" };
             rctHurdle.MouseLeftButtonDown += rctHurdle_MouseLeftButtonDown;
+
+            rctDestination = new Rectangle() { MinHeight = 20, MinWidth = 20, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Fill = Brushes.Orange, Stroke = Brushes.White, Margin = new Thickness(5), ToolTip = "Destination" };
+            rctDestination.MouseLeftButtonDown += rctDestination_MouseLeftButtonDown;
+
+            rctInitialPoint = new Rectangle() { MinHeight = 20, MinWidth = 20, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Fill = Brushes.Purple, Stroke = Brushes.White, Margin = new Thickness(5), ToolTip = "Destination" };
+            rctInitialPoint.MouseLeftButtonDown += rctInitialPoint_MouseLeftButtonDown;
+
+            linEdge = new Line() { X1 = 0, Y1 = 0, X2 = 15, Y2 = 10, StrokeThickness = 2, Stroke = Brushes.Red, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            linEdge.MouseLeftButtonDown += linEdge_MouseLeftButtonDown;
 
             //side panels
             txtleft = new TextBox() { MinWidth = 150, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch, Margin = new Thickness(5) };
@@ -173,16 +193,13 @@ namespace AlgoProject.UIComponents
             lstFloor.MouseLeftButtonDown += lstBoxMouseDown;
             lstFloor.MouseMove += lstFloor_MouseMove;
             //setting style of floor
-            using (FileStream fileStream = new FileStream("TileStyle.xaml", FileMode.Open, FileAccess.Read))
-            {
-                lstFloor.ItemContainerStyle = (Style)XamlReader.Load(fileStream);
-            }
-            ItemsPanelTemplate template = new ItemsPanelTemplate();
-            using (FileStream fileStream = new FileStream("FloorPanelTemplate.xaml", FileMode.Open, FileAccess.Read))
-            {
-                template = (ItemsPanelTemplate)XamlReader.Load(fileStream);
 
-            }
+            lstFloor.ItemContainerStyle = (Style)this.FindResource("lstBoxStyle");
+           
+            ItemsPanelTemplate template = new ItemsPanelTemplate();
+
+            template = (ItemsPanelTemplate)this.FindResource("lstBoxTemplate");
+
             lstFloor.ItemsPanel = template;
 
             lstFloor.ItemsSource = floorBacklog;
@@ -196,6 +213,9 @@ namespace AlgoProject.UIComponents
             stkToolbar.Children.Add(rctWayPoint);
             stkToolbar.Children.Add(rctHurdle);
             stkToolbar.Children.Add(rctClear);
+            stkToolbar.Children.Add(rctInitialPoint);
+            stkToolbar.Children.Add(rctDestination);
+            stkToolbar.Children.Add(linEdge);
 
             stkLeftInternal.Children.Add(chb1);
             stkLeftInternal.Children.Add(chb2);
@@ -224,6 +244,71 @@ namespace AlgoProject.UIComponents
             this.Content = brdSurround;
         }
 
+        void linEdge_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            edgeType = true;
+            (sender as Line).Stroke = Brushes.Purple;
+            selectedType = null;
+        }
+
+        void rctInitialPoint_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            selectedType = TileType.InitialPoint;
+            rctClear.StrokeThickness = 0;
+            rctHurdle.StrokeThickness = 0;
+            rctWayPoint.StrokeThickness = 0;
+            rctDestination.StrokeThickness = 0;
+            rctInitialPoint.StrokeThickness = 2;
+            edgeType = false;
+        }
+
+        void rctDestination_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            selectedType = TileType.Destination;
+            rctClear.StrokeThickness = 0;
+            rctHurdle.StrokeThickness = 0;
+            rctWayPoint.StrokeThickness = 0;
+            rctDestination.StrokeThickness = 2;
+            rctInitialPoint.StrokeThickness = 0;
+            edgeType = false;
+
+        }
+
+        void rctHurdle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            selectedType = TileType.Obstacle;
+            rctClear.StrokeThickness = 0;
+            rctHurdle.StrokeThickness = 2;
+            rctWayPoint.StrokeThickness = 0;
+            rctDestination.StrokeThickness = 0;
+            rctInitialPoint.StrokeThickness = 0;
+            edgeType = false;
+
+        }
+
+        void rctWayPoint_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            selectedType = TileType.WayPoint;
+            rctClear.StrokeThickness = 0;
+            rctHurdle.StrokeThickness = 0;
+            rctWayPoint.StrokeThickness = 2;
+            rctDestination.StrokeThickness = 0;
+            rctInitialPoint.StrokeThickness = 0;
+            edgeType = false;
+
+        }
+
+        void rctClear_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            selectedType = TileType.Clear;
+            rctClear.StrokeThickness = 2;
+            rctHurdle.StrokeThickness = 0;
+            rctWayPoint.StrokeThickness = 0;
+            rctDestination.StrokeThickness = 0;
+            rctInitialPoint.StrokeThickness = 0;
+            edgeType = false;
+
+        }
         void lstFloor_MouseMove(object sender, MouseEventArgs e)
         {
             Tile selectedItem = ((Tile)((ListBox)sender).SelectedItem);
@@ -233,29 +318,6 @@ namespace AlgoProject.UIComponents
             }
         }
 
-        void rctHurdle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            selectedType = TileType.Obstacle;
-            rctClear.StrokeThickness = 0;
-            rctHurdle.StrokeThickness = 2;
-            rctWayPoint.StrokeThickness = 0;
-        }
-
-        void rctWayPoint_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            selectedType = TileType.WayPoint;
-            rctClear.StrokeThickness = 0;
-            rctHurdle.StrokeThickness = 0;
-            rctWayPoint.StrokeThickness = 2;
-        }
-
-        void rctClear_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            selectedType = TileType.Clear;
-            rctClear.StrokeThickness = 2;
-            rctHurdle.StrokeThickness = 0;
-            rctWayPoint.StrokeThickness = 0;
-        }
 
         //function to add row and column definitions to main grid
         private void addMainGridDefinitions()
@@ -317,51 +379,47 @@ namespace AlgoProject.UIComponents
 
         }
 
+
         private void lstBoxMouseDown(object sender, MouseButtonEventArgs e)
         {
             Tile selectedItem = ((Tile)((ListBox)sender).SelectedItem);
+
             if (selectedItem != null && selectedType != null && selectedItem.Type != selectedType)
             {
                 selectedItem.Type = (TileType)selectedType;
 
+                if (selectedType == TileType.WayPoint || selectedType == TileType.InitialPoint || selectedType == TileType.Destination)
+                {
+
+                    floorBacklog.WayPoints.Add(selectedItem);
+
+                }
+
             }
-        }
-        protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
-        {
-           // var x = Math.Pow(2, e.Delta / 3.0 / Mouse.MouseWheelDeltaForOneLine);
-           // cvsFloor.Scale *= x;
-
-            // Adjust the offset to make the point under the mouse stay still.
-
-        }
-
-        private void ZoomableCanvas_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Store the canvas in a local variable since x:Name doesn't work.
-            cvsFloor = (ZoomableCanvas)sender;
-        }
-
-        #endregion
-
-        private childItem FindVisualChild<childItem>(DependencyObject obj)
-    where childItem : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            else if (edgeType == true)
             {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is childItem)
-                    return (childItem)child;
+                if (firstPoint == null)
+                {
+                    firstPoint = selectedItem;
+                }
                 else
                 {
-                    childItem childOfChild = FindVisualChild<childItem>(child);
-                    if (childOfChild != null)
-                        return childOfChild;
+                    Edge edge = new Edge(firstPoint, selectedItem);
+                    //((ListBox)(sender)).Items.Add(new Line() { X1 = firstPoint.Left, Y1 = firstPoint.Top, X2 = selectedItem.Left, Y2 = selectedItem.Top, StrokeThickness = 2, Stroke = Brushes.Red, Margin = new Thickness(5), });
+
+                    if (floorBacklog.Edges.ContainsKey(selectedItem.Position))
+                    {
+                        floorBacklog.Edges[selectedItem.Position].Add(edge);
+                    }
+                    else
+                    {
+                        List<Edge> newList = new List<Edge>();
+                        newList.Add(edge);
+                        floorBacklog.Edges.Add(selectedItem.Position, newList);
+                    }
                 }
             }
-            return null;
-            
         }
-
-
+        #endregion
     }
 }

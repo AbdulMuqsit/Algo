@@ -16,6 +16,19 @@ namespace AlgoProject.Models
         #region fields
         //Collection storing tiles drawn until now
         public ObservableCollection<Tile> tilesCollection;
+        Dictionary<int, List<Edge>> edges = new Dictionary<int, List<Edge>>();
+        public Dictionary<int, List<Edge>> Edges
+        {
+            get { return edges; }
+
+        }
+        private List<Tile> wayPoints = new List<Tile>();
+
+        public List<Tile> WayPoints
+        {
+            get { return wayPoints; }
+
+        }
         #endregion
 
         #region properties
@@ -27,19 +40,20 @@ namespace AlgoProject.Models
             }
             set
             {
-                
+
                 floorDimensions = value;
-               // initializeTileCollection(value);
+                // initializeTileCollection(value);
                 if (this.ExtentChanged != null && this.QueryInvalidated != null)
                 {
                     this.ExtentChanged(this, EventArgs.Empty);
                     this.QueryInvalidated(this, EventArgs.Empty);
                 }
-                
+
             }
         }
-        
-        
+
+
+
         //Canvas automatically checks this property to get the height and width of whole surface to be drawn
         public Rect Extent
         {
@@ -48,16 +62,16 @@ namespace AlgoProject.Models
         #endregion
 
         #region constructors
-        
 
-        
+
+
         public FloorBacklog(Coordinate dimension)
         {
-            
+
             initializeTileCollection(dimension);
             //attaching event handlers
-            
-            
+
+
         }
 
         #endregion
@@ -73,7 +87,8 @@ namespace AlgoProject.Models
                 tilesCollection.Add(null);
             }
             tilesCollection.CollectionChanged += ((s, e) => { this.QueryInvalidated(this, EventArgs.Empty); });
-            
+
+
         }
 
         //canvas calls this method to get the indexes of items to be drawn on screen
@@ -120,23 +135,32 @@ namespace AlgoProject.Models
         #endregion
 
         #region events
-     
+
         public event EventHandler ExtentChanged; //supposed to be fired when the whole virtual area changes
         public event EventHandler QueryInvalidated; //supposed to be fired when a change occurs in the visible area of canvas
-        #endregion 
- 
+        #endregion
+
         #region indexer
         public object this[int i]
         {
             get
             {
-                return tilesCollection[i];
+                ObservableCollection<Edge> edgesCollection = null;
+                if (edges.ContainsKey(i))
+                {
+                    edgesCollection = new ObservableCollection<Edge>(edges[i]);
+
+                }
+
+                return new { Tile = tilesCollection[i], EdgesCollection = edgesCollection };
             }
             set
             {
                 tilesCollection[i] = (Tile)value;
+
             }
         }
+
         #endregion
 
         #region ilistImplementation

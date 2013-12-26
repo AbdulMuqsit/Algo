@@ -15,9 +15,22 @@ namespace AlgoProject.Models
         private static Coordinate floorDimensions;
         #region fields
         //Collection storing tiles drawn until now
-        public ObservableCollection<Tile> tilesCollection;
-        Dictionary<int, List<Edge>> edges = new Dictionary<int, List<Edge>>();
-        public Dictionary<int, List<Edge>> Edges
+        private ObservableCollection<Tile> tilesCollection;
+
+        public ObservableCollection<Tile> TilesCollection
+        {
+            get { return tilesCollection; }
+        }
+        List<Edge> edges = new List<Edge>();
+
+        Dictionary<int, List<int>> edgeMapping = new Dictionary<int, List<int>>();
+
+        public Dictionary<int, List<int>> EdgeMapping
+        {
+            get { return edgeMapping; }
+           
+        }
+        public List<Edge> Edges
         {
             get { return edges; }
 
@@ -123,13 +136,24 @@ namespace AlgoProject.Models
                     if (tilesCollection[currentPosition] == null)
                     {
 
-                        tile = new Tile() { Type = TileType.Clear, Location = new Coordinate() { X = j, Y = i } };
+                        tile = new Tile() { Type = ShapeType.Clear, Location = new Coordinate() { X = j, Y = i } };
                         tilesCollection[currentPosition] = tile;
 
                     }
                     ((List<int>)indexes).Add(currentPosition);
                 }
             }
+            for (int i = 0; i < ((List<int>)indexes).Count; i++)
+            {
+                if (EdgeMapping.ContainsKey(i))
+                {
+                    foreach (int mapping in edgeMapping[i])
+                    {
+                        ((List<int>)indexes).Add(mapping);
+                    }
+                }
+            }
+           
             return indexes;
         }
         #endregion
@@ -145,14 +169,9 @@ namespace AlgoProject.Models
         {
             get
             {
-                ObservableCollection<Edge> edgesCollection = null;
-                if (edges.ContainsKey(i))
-                {
-                    edgesCollection = new ObservableCollection<Edge>(edges[i]);
+               
 
-                }
-
-                return new { Tile = tilesCollection[i], EdgesCollection = edgesCollection };
+                return  tilesCollection[i];
             }
             set
             {

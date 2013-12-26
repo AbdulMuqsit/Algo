@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AlgoProject.Models
 {
-    public class Edge
+    public class Edge:Tile
     {
         public Tile U { get; private set; }
         public Tile V { get; private set; }
@@ -24,5 +24,8 @@ namespace AlgoProject.Models
             U = u;
             V = v;
         }
+       
+      
+         
     }
 }

@@ -2,17 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace AlgoProject.Models
 {
-    public enum ShapeType
+    interface IShape
     {
-        Clear,
-        WayPoint,
-        Obstacle,
-        InitialPoint,
-        Destination,
-        Edge
-
     }
 }

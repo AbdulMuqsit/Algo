@@ -23,7 +23,7 @@ namespace AlgoProject.UIComponents
         RowDefinition rowDefinition;
         ColumnDefinition columnDefiniton;
 
-        TileType? selectedType;
+        ShapeType? selectedType;
         bool edgeType = false;
         //Border around the window
         Border brdSurround;
@@ -253,7 +253,7 @@ namespace AlgoProject.UIComponents
 
         void rctInitialPoint_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            selectedType = TileType.InitialPoint;
+            selectedType = ShapeType.InitialPoint;
             rctClear.StrokeThickness = 0;
             rctHurdle.StrokeThickness = 0;
             rctWayPoint.StrokeThickness = 0;
@@ -264,7 +264,7 @@ namespace AlgoProject.UIComponents
 
         void rctDestination_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            selectedType = TileType.Destination;
+            selectedType = ShapeType.Destination;
             rctClear.StrokeThickness = 0;
             rctHurdle.StrokeThickness = 0;
             rctWayPoint.StrokeThickness = 0;
@@ -276,7 +276,7 @@ namespace AlgoProject.UIComponents
 
         void rctHurdle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            selectedType = TileType.Obstacle;
+            selectedType = ShapeType.Obstacle;
             rctClear.StrokeThickness = 0;
             rctHurdle.StrokeThickness = 2;
             rctWayPoint.StrokeThickness = 0;
@@ -288,7 +288,7 @@ namespace AlgoProject.UIComponents
 
         void rctWayPoint_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            selectedType = TileType.WayPoint;
+            selectedType = ShapeType.WayPoint;
             rctClear.StrokeThickness = 0;
             rctHurdle.StrokeThickness = 0;
             rctWayPoint.StrokeThickness = 2;
@@ -300,7 +300,7 @@ namespace AlgoProject.UIComponents
 
         void rctClear_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            selectedType = TileType.Clear;
+            selectedType = ShapeType.Clear;
             rctClear.StrokeThickness = 2;
             rctHurdle.StrokeThickness = 0;
             rctWayPoint.StrokeThickness = 0;
@@ -312,9 +312,9 @@ namespace AlgoProject.UIComponents
         void lstFloor_MouseMove(object sender, MouseEventArgs e)
         {
             Tile selectedItem = ((Tile)((ListBox)sender).SelectedItem);
-            if (e.LeftButton == MouseButtonState.Pressed && selectedItem != null && selectedType == TileType.Obstacle)
+            if (e.LeftButton == MouseButtonState.Pressed && selectedItem != null && selectedType == ShapeType.Obstacle)
             {
-                selectedItem.Type = TileType.Obstacle;
+                selectedItem.Type = ShapeType.Obstacle;
             }
         }
 
@@ -386,9 +386,9 @@ namespace AlgoProject.UIComponents
 
             if (selectedItem != null && selectedType != null && selectedItem.Type != selectedType)
             {
-                selectedItem.Type = (TileType)selectedType;
+                selectedItem.Type = (ShapeType)selectedType;
 
-                if (selectedType == TileType.WayPoint || selectedType == TileType.InitialPoint || selectedType == TileType.Destination)
+                if (selectedType == ShapeType.WayPoint || selectedType == ShapeType.InitialPoint || selectedType == ShapeType.Destination)
                 {
 
                     floorBacklog.WayPoints.Add(selectedItem);
@@ -406,19 +406,21 @@ namespace AlgoProject.UIComponents
                 {
                     Edge edge = new Edge(firstPoint, selectedItem);
                     //((ListBox)(sender)).Items.Add(new Line() { X1 = firstPoint.Left, Y1 = firstPoint.Top, X2 = selectedItem.Left, Y2 = selectedItem.Top, StrokeThickness = 2, Stroke = Brushes.Red, Margin = new Thickness(5), });
-
-                    if (floorBacklog.Edges.ContainsKey(selectedItem.Position))
+                    floorBacklog.TilesCollection.Add(edge);
+                    if (floorBacklog.EdgeMapping.ContainsKey(firstPoint.Position))
                     {
-                        floorBacklog.Edges[selectedItem.Position].Add(edge);
+                        floorBacklog.EdgeMapping[firstPoint.Position].Add((floorBacklog.TilesCollection.Count-1));
                     }
+                    
                     else
                     {
-                        List<Edge> newList = new List<Edge>();
-                        newList.Add(edge);
-                        floorBacklog.Edges.Add(selectedItem.Position, newList);
+                        List<int> newList = new List<int>();
+                        newList.Add(floorBacklog.TilesCollection.Count-1);
+                        floorBacklog.EdgeMapping[firstPoint.Position] = newList;
                     }
                 }
             }
+
         }
         #endregion
     }

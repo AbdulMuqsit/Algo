@@ -23,58 +23,58 @@
             <Setter Property="ContentTemplate">
                 <Setter.Value>
                     <DataTemplate >
-                        <Grid>
-
-                            <Rectangle Margin="-1" Width="{Binding Width}" Height="{Binding Height}" Fill="Gainsboro" Stroke="Silver" />
-                            <ListBox ItemsSource="{Binding Path=EdgesCollection}">
-
-                            </ListBox>
-                            <Line Stroke="Red" StrokeThickness="2" X1="{Binding Path=U.Left}" X2="{Binding Path=V.Left}" Y1="{Binding Path=U.Top}" Y2="{Binding Path=V.Top}" />
-
-                        </Grid>
+                        <Rectangle Margin="-1" Width="{Binding Width}" Height="{Binding Height}" Fill="Gainsboro" Stroke="Silver" />
                     </DataTemplate>
                 </Setter.Value>
             </Setter>
 
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=Tile.Type}" Value="WayPoint">
+                <DataTrigger Binding="{Binding Path=Type}" Value="WayPoint">
                     <Setter Property="ContentTemplate">
                         <Setter.Value>
                             <DataTemplate>
 
-                                <Rectangle Margin="-1" Width="{Binding Path=Tile.Width}" Height="{Binding Path=Tile.Height}" Fill="PaleGreen" Stroke="Silver"></Rectangle>
+                                <Rectangle Margin="-1" Width="{Binding Path=Width}" Height="{Binding Path=Height}" Fill="PaleGreen" Stroke="Silver"></Rectangle>
                             </DataTemplate>
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Path=Tile.Type}" Value="Obstacle">
+                <DataTrigger Binding="{Binding Path=Type}" Value="Obstacle">
                     <Setter Property="ContentTemplate">
                         <Setter.Value>
                             <DataTemplate>
-                                <Rectangle Margin="-1" Width="{Binding Path=Tile.Width}" Height="{Binding Path=Tile.Height}" Fill="Black" Stroke="Gray"></Rectangle>
+                                <Rectangle Margin="-1" Width="{Binding Path=Width}" Height="{Binding Path=Height}" Fill="Black" Stroke="Gray"></Rectangle>
                             </DataTemplate>
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Path=Tile.Type}" Value="Destination">
+                <DataTrigger Binding="{Binding Path=Type}" Value="Destination">
                     <Setter Property="ContentTemplate">
                         <Setter.Value>
                             <DataTemplate>
-                                <Rectangle Margin="-1" Width="{Binding Path=Tile.Width}" Height="{Binding Path=Tile.Height}" Fill="Orange" Stroke="Gold"></Rectangle>
+                                <Rectangle Margin="-1" Width="{Binding Path=Width}" Height="{Binding Path=Height}" Fill="Orange" Stroke="Gold"></Rectangle>
                             </DataTemplate>
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Path=Tile.Type}" Value="InitialPoint">
+                <DataTrigger Binding="{Binding Path=Type}" Value="InitialPoint">
                     <Setter Property="ContentTemplate">
                         <Setter.Value>
                             <DataTemplate>
-                                <Rectangle Margin="-1" Width="{Binding Path=Tile.Width}" Height="{Binding Path=Tile.Height}" Fill="Purple" Stroke="Navy"></Rectangle>
+                                <Rectangle Margin="-1" Width="{Binding Path=Width}" Height="{Binding Path=Height}" Fill="Purple" Stroke="Navy"></Rectangle>
                             </DataTemplate>
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
-
+                <DataTrigger Binding="{Binding Type}" Value="Edge">
+                    <Setter Property="ContentTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <Line  Stroke="Red" StrokeThickness="2" X1="{Binding Path=U.Left}" X2="{Binding Path=V.Left}" Y1="{Binding Path=U.Top}" Y2="{Binding Path=V.Top}"  />
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>

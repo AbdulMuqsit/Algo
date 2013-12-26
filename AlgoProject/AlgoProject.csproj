@@ -42,6 +42,7 @@
     <Compile Include="Models\Coordinate.cs" />
     <Compile Include="Models\Edge.cs" />
     <Compile Include="Models\FloorBacklog.cs" />
+    <Compile Include="Models\IShape.cs" />
     <Compile Include="Models\Tile.cs" />
     <Compile Include="Models\TileType.cs" />
     <Compile Include="UIComponents\DimensionDialogBox.cs" />

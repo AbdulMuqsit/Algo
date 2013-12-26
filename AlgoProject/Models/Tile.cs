@@ -14,13 +14,13 @@ namespace AlgoProject.Models
     {
 
         #region Fields
-        private TileType type;
+        private ShapeType type;
         #endregion
         static MainWindow mainWindow = ((MainWindow)Application.Current.MainWindow);
         #region properties
         public Coordinate Location { get; set; }
         public int Position { get { return (int)((Location.Y * ((MainWindow)Application.Current.MainWindow).Dimensions.X) + Location.X); } set { } }
-        public TileType Type
+        public ShapeType Type
         {
             get
             {

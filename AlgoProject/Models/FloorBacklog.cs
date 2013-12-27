@@ -167,11 +167,12 @@ namespace AlgoProject.Models
                     ((List<int>)indexes).Add(currentPosition);
                 }
             }
-            for (int i = 0; i < ((List<int>)indexes).Count; i++)
+            List<int> listIndex = indexes as List<int>;
+            for (int i = 0; i < listIndex.Count; i++)
             {
-                if (EdgeMapping.ContainsKey(i))
+                if (EdgeMapping.ContainsKey(listIndex[i]))
                 {
-                    foreach (int mapping in edgeMapping[i])
+                    foreach (int mapping in edgeMapping[listIndex[i]])
                     {
                         ((List<int>)indexes).Add(mapping);
                     }
@@ -193,7 +194,6 @@ namespace AlgoProject.Models
         {
             get
             {
-               
 
                 return  tilesCollection[i];
             }

@@ -13,7 +13,7 @@ using System.Windows.Threading;
 
 namespace AlgoProject.UIComponents
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : TransparentWindow
     {
         //Grid's related fields
         Grid grdMain = new Grid();
@@ -182,7 +182,7 @@ namespace AlgoProject.UIComponents
 
             cmbDown = new ComboBox() { MinWidth = 150, HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new Thickness(5) };
 
-            btnFinalTree = new Button() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MinHeight = 50, MinWidth = 100, Background = Brushes.Black };
+            btnFinalTree = new Button() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MinHeight = 50, MinWidth = 100, Background = Brushes.Black, Content = "Calculate Path", Padding = new Thickness(5), Foreground = Brushes.White };
             btnFinalTree.Click += btnFinalTree_Click;
 
             //listBox hosting tiles of floor
@@ -195,12 +195,7 @@ namespace AlgoProject.UIComponents
 
             lstFloor.ItemContainerStyle = (Style)this.FindResource("lstBoxStyle");
 
-            ItemsPanelTemplate template = new ItemsPanelTemplate();
-
-            template = (ItemsPanelTemplate)this.FindResource("lstBoxTemplate");
-
-
-            lstFloor.ItemsPanel = template;
+            lstFloor.ItemsPanel = (ItemsPanelTemplate)this.FindResource("lstBoxTemplate"); ;
 
             lstFloor.ItemsSource = floorBacklog;
             lstFloor.IsSynchronizedWithCurrentItem = true;
@@ -248,7 +243,9 @@ namespace AlgoProject.UIComponents
         void btnFinalTree_Click(object sender, RoutedEventArgs e)
         {
             BellmanFord.MakeBellmanFordTree(floorBacklog.Edges, floorBacklog.Source);
+
             Tile vertex = floorBacklog.Destination;
+
             while (vertex.Parent != null)
             {
                 vertex.Type = ShapeType.Destination;
@@ -409,47 +406,37 @@ namespace AlgoProject.UIComponents
 
             if (selectedItem != null && selectedType != null && selectedType != ShapeType.Edge && selectedItem.Type != selectedType)
             {
-                if (selectedItem.Type != ShapeType.Edge)
+
+                if (selectedItem.Type == ShapeType.Destination)
                 {
-                    if (selectedItem.Type == ShapeType.Destination)
-                    {
-                        floorBacklog.Destination = null;
-
-                    }
-                    else if (selectedItem.Type == ShapeType.InitialPoint)
-                    {
-                        floorBacklog.Source = null;
-                    }
-
-                    if (selectedType == ShapeType.InitialPoint && floorBacklog.Source == null)
-                    {
-                        selectedItem.Type = (ShapeType)selectedType;
-                        floorBacklog.Source = (Tile)selectedItem;
-                    }
-                    else if (selectedType == ShapeType.Destination && floorBacklog.Destination == null)
-                    {
-                        selectedItem.Type = (ShapeType)selectedType;
-                        floorBacklog.Destination = (Tile)selectedItem;
-                    }
-                    else if (selectedType == ShapeType.WayPoint )
-                    {
-                        selectedItem.Type = (ShapeType)selectedType;
-
-                        floorBacklog.WayPoints.Add((Tile)selectedItem);
-
-
-                    }
-                }
-                else
-                {
-                    Point position = e.GetPosition(cvsFloor);
-                    int top = (int)position.Y / Tile.Width;
-                    int left = (int)position.X / Tile.Height;
-
-                    int location = ((int)(position.Y / Tile.Width)) * floorBacklog.FloorDimensions.X + ((int)(position.X / Tile.Width));
-                    floorBacklog.TilesCollection[location].Type = (ShapeType)selectedType;
+                    floorBacklog.Destination = null;
 
                 }
+                else if (selectedItem.Type == ShapeType.InitialPoint)
+                {
+                    floorBacklog.Source = null;
+                }
+
+                if (selectedType == ShapeType.InitialPoint && floorBacklog.Source == null)
+                {
+                    selectedItem.Type = (ShapeType)selectedType;
+                    floorBacklog.Source = (Tile)selectedItem;
+                }
+                else if (selectedType == ShapeType.Destination && floorBacklog.Destination == null)
+                {
+                    selectedItem.Type = (ShapeType)selectedType;
+                    floorBacklog.Destination = (Tile)selectedItem;
+                }
+                else if (selectedType == ShapeType.WayPoint || selectedType == ShapeType.Clear || selectedType == ShapeType.Obstacle)
+                {
+                    selectedItem.Type = (ShapeType)selectedType;
+
+                    floorBacklog.WayPoints.Add((Tile)selectedItem);
+
+
+                }
+
+
 
             }
             else if (selectedType == ShapeType.Edge && selectedItem.Type != ShapeType.Clear && selectedItem.Type != ShapeType.Obstacle)

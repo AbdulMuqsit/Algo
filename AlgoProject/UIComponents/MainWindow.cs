@@ -15,16 +15,13 @@ namespace AlgoProject.UIComponents
 {
     public partial class MainWindow : Window
     {
-
-
-
         //Grid's related fields
         Grid grdMain = new Grid();
         RowDefinition rowDefinition;
         ColumnDefinition columnDefiniton;
 
         ShapeType? selectedType;
-        bool edgeType = false;
+
         //Border around the window
         Border brdSurround;
 
@@ -51,6 +48,7 @@ namespace AlgoProject.UIComponents
 
         ZoomableCanvas cvsFloor;
         //Left Panel
+        Button btnFinalTree;
         StackPanel stkLeft, stkRight, stkToolbar;
         Border brdFloorSurround;
         ListBox lstFloor;
@@ -74,7 +72,6 @@ namespace AlgoProject.UIComponents
         public Coordinate Dimensions { get; set; }
         public FloorBacklog Backlog { get { return floorBacklog; } }
         #endregion
-
         public MainWindow()
         {
             InitializeComponent();
@@ -90,7 +87,6 @@ namespace AlgoProject.UIComponents
             this.Loaded += Window_Loaded;
 
         }
-
         void loaded(object sender, RoutedEventArgs e)
         {
             cvsFloor = sender as ZoomableCanvas;
@@ -147,7 +143,7 @@ namespace AlgoProject.UIComponents
             rctDestination = new Rectangle() { MinHeight = 20, MinWidth = 20, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Fill = Brushes.Orange, Stroke = Brushes.White, Margin = new Thickness(5), ToolTip = "Destination" };
             rctDestination.MouseLeftButtonDown += rctDestination_MouseLeftButtonDown;
 
-            rctInitialPoint = new Rectangle() { MinHeight = 20, MinWidth = 20, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Fill = Brushes.Purple, Stroke = Brushes.White, Margin = new Thickness(5), ToolTip = "Destination" };
+            rctInitialPoint = new Rectangle() { MinHeight = 20, MinWidth = 20, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Fill = Brushes.Purple, Stroke = Brushes.White, Margin = new Thickness(5), ToolTip = "Source" };
             rctInitialPoint.MouseLeftButtonDown += rctInitialPoint_MouseLeftButtonDown;
 
             linEdge = new Line() { X1 = 0, Y1 = 0, X2 = 15, Y2 = 10, StrokeThickness = 2, Stroke = Brushes.Red, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
@@ -186,6 +182,9 @@ namespace AlgoProject.UIComponents
 
             cmbDown = new ComboBox() { MinWidth = 150, HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new Thickness(5) };
 
+            btnFinalTree = new Button() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MinHeight = 50, MinWidth = 100, Background = Brushes.Black };
+            btnFinalTree.Click += btnFinalTree_Click;
+
             //listBox hosting tiles of floor
             lstFloor = new ListBox() { HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
             lstFloor.AddHandler(MouseLeftButtonDownEvent, new MouseButtonEventHandler(lstBoxMouseDown), true);
@@ -195,10 +194,11 @@ namespace AlgoProject.UIComponents
             //setting style of floor
 
             lstFloor.ItemContainerStyle = (Style)this.FindResource("lstBoxStyle");
-           
+
             ItemsPanelTemplate template = new ItemsPanelTemplate();
 
             template = (ItemsPanelTemplate)this.FindResource("lstBoxTemplate");
+
 
             lstFloor.ItemsPanel = template;
 
@@ -228,6 +228,7 @@ namespace AlgoProject.UIComponents
             stkRight.Children.Add(cmbDimensions);
             stkRight.Children.Add(cvsGraph);
             stkRight.Children.Add(txtDebug);
+            stkRight.Children.Add(btnFinalTree);
             stkRight.Children.Add(cmbDown);
 
             grdMain.Children.Add(rctTitleBar);
@@ -244,11 +245,27 @@ namespace AlgoProject.UIComponents
             this.Content = brdSurround;
         }
 
+        void btnFinalTree_Click(object sender, RoutedEventArgs e)
+        {
+            BellmanFord.MakeBellmanFordTree(floorBacklog.Edges, floorBacklog.Source);
+            Tile vertex = floorBacklog.Destination;
+            while (vertex.Parent != null)
+            {
+                vertex.Type = ShapeType.Destination;
+                vertex = vertex.Parent;
+            }
+        }
+
         void linEdge_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            edgeType = true;
-            (sender as Line).Stroke = Brushes.Purple;
-            selectedType = null;
+            selectedType = ShapeType.Edge;
+            rctClear.StrokeThickness = 0;
+            rctHurdle.StrokeThickness = 0;
+            rctWayPoint.StrokeThickness = 0;
+            rctDestination.StrokeThickness = 0;
+            rctInitialPoint.StrokeThickness = 0;
+            (sender as Line).Stroke = Brushes.Orange;
+
         }
 
         void rctInitialPoint_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -259,7 +276,8 @@ namespace AlgoProject.UIComponents
             rctWayPoint.StrokeThickness = 0;
             rctDestination.StrokeThickness = 0;
             rctInitialPoint.StrokeThickness = 2;
-            edgeType = false;
+            linEdge.Stroke = Brushes.Red;
+            firstPoint = null;
         }
 
         void rctDestination_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -270,7 +288,9 @@ namespace AlgoProject.UIComponents
             rctWayPoint.StrokeThickness = 0;
             rctDestination.StrokeThickness = 2;
             rctInitialPoint.StrokeThickness = 0;
-            edgeType = false;
+            linEdge.Stroke = Brushes.Red;
+
+            firstPoint = null;
 
         }
 
@@ -282,7 +302,9 @@ namespace AlgoProject.UIComponents
             rctWayPoint.StrokeThickness = 0;
             rctDestination.StrokeThickness = 0;
             rctInitialPoint.StrokeThickness = 0;
-            edgeType = false;
+            linEdge.Stroke = Brushes.Red;
+
+            firstPoint = null;
 
         }
 
@@ -294,8 +316,10 @@ namespace AlgoProject.UIComponents
             rctWayPoint.StrokeThickness = 2;
             rctDestination.StrokeThickness = 0;
             rctInitialPoint.StrokeThickness = 0;
-            edgeType = false;
+            linEdge.Stroke = Brushes.Red;
 
+
+            firstPoint = null;
         }
 
         void rctClear_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -306,12 +330,14 @@ namespace AlgoProject.UIComponents
             rctWayPoint.StrokeThickness = 0;
             rctDestination.StrokeThickness = 0;
             rctInitialPoint.StrokeThickness = 0;
-            edgeType = false;
+            linEdge.Stroke = Brushes.Red;
+
+            firstPoint = null;
 
         }
         void lstFloor_MouseMove(object sender, MouseEventArgs e)
         {
-            Tile selectedItem = ((Tile)((ListBox)sender).SelectedItem);
+            Tile selectedItem = ((ListBox)sender).SelectedItem as Tile;
             if (e.LeftButton == MouseButtonState.Pressed && selectedItem != null && selectedType == ShapeType.Obstacle)
             {
                 selectedItem.Type = ShapeType.Obstacle;
@@ -355,7 +381,6 @@ namespace AlgoProject.UIComponents
             grdMain.ColumnDefinitions.Add(columnDefiniton);
         }
         #endregion
-
         #region eventHandlers
         //Window load event handler
         void Window_Loaded(object sender, RoutedEventArgs e)
@@ -378,50 +403,101 @@ namespace AlgoProject.UIComponents
             Application.Current.MainWindow.DragMove();
 
         }
-
-
         private void lstBoxMouseDown(object sender, MouseButtonEventArgs e)
         {
-            Tile selectedItem = ((Tile)((ListBox)sender).SelectedItem);
+            AlgoProject.Models.Shape selectedItem = (((ListBox)sender).SelectedItem) as AlgoProject.Models.Shape;
 
-            if (selectedItem != null && selectedType != null && selectedItem.Type != selectedType)
+            if (selectedItem != null && selectedType != null && selectedType != ShapeType.Edge && selectedItem.Type != selectedType)
             {
-                selectedItem.Type = (ShapeType)selectedType;
-
-                if (selectedType == ShapeType.WayPoint || selectedType == ShapeType.InitialPoint || selectedType == ShapeType.Destination)
+                if (selectedItem.Type != ShapeType.Edge)
                 {
+                    if (selectedItem.Type == ShapeType.Destination)
+                    {
+                        floorBacklog.Destination = null;
 
-                    floorBacklog.WayPoints.Add(selectedItem);
+                    }
+                    else if (selectedItem.Type == ShapeType.InitialPoint)
+                    {
+                        floorBacklog.Source = null;
+                    }
 
-                }
+                    if (selectedType == ShapeType.InitialPoint && floorBacklog.Source == null)
+                    {
+                        selectedItem.Type = (ShapeType)selectedType;
+                        floorBacklog.Source = (Tile)selectedItem;
+                    }
+                    else if (selectedType == ShapeType.Destination && floorBacklog.Destination == null)
+                    {
+                        selectedItem.Type = (ShapeType)selectedType;
+                        floorBacklog.Destination = (Tile)selectedItem;
+                    }
+                    else if (selectedType == ShapeType.WayPoint )
+                    {
+                        selectedItem.Type = (ShapeType)selectedType;
 
-            }
-            else if (edgeType == true)
-            {
-                if (firstPoint == null)
-                {
-                    firstPoint = selectedItem;
+                        floorBacklog.WayPoints.Add((Tile)selectedItem);
+
+
+                    }
                 }
                 else
                 {
-                    Edge edge = new Edge(firstPoint, selectedItem);
-                    //((ListBox)(sender)).Items.Add(new Line() { X1 = firstPoint.Left, Y1 = firstPoint.Top, X2 = selectedItem.Left, Y2 = selectedItem.Top, StrokeThickness = 2, Stroke = Brushes.Red, Margin = new Thickness(5), });
-                    floorBacklog.TilesCollection.Add(edge);
-                    if (floorBacklog.EdgeMapping.ContainsKey(firstPoint.Position))
+                    Point position = e.GetPosition(cvsFloor);
+                    int top = (int)position.Y / Tile.Width;
+                    int left = (int)position.X / Tile.Height;
+
+                    int location = ((int)(position.Y / Tile.Width)) * floorBacklog.FloorDimensions.X + ((int)(position.X / Tile.Width));
+                    floorBacklog.TilesCollection[location].Type = (ShapeType)selectedType;
+
+                }
+
+            }
+            else if (selectedType == ShapeType.Edge && selectedItem.Type != ShapeType.Clear && selectedItem.Type != ShapeType.Obstacle)
+            {
+                if (firstPoint == null)
+                {
+                    firstPoint = (Tile)selectedItem;
+                }
+
+                else
+                {
+                    Edge edge = new Edge((Tile)firstPoint, (Tile)selectedItem);
+
+                    if (floorBacklog.EdgeMapping.ContainsKey(firstPoint.Position) && !isDuplicateEdge(edge) && edge.U != edge.V)
                     {
-                        floorBacklog.EdgeMapping[firstPoint.Position].Add((floorBacklog.TilesCollection.Count-1));
+                        floorBacklog.TilesCollection.Add(edge);
+                        floorBacklog.Edges.Add(edge);
+                        floorBacklog.EdgeMapping[firstPoint.Position].Add((floorBacklog.TilesCollection.Count - 1));
                     }
-                    
-                    else
+
+                    else if (!floorBacklog.EdgeMapping.ContainsKey(firstPoint.Position) && edge.U != edge.V)
                     {
+                        floorBacklog.TilesCollection.Add(edge);
+                        floorBacklog.Edges.Add(edge);
                         List<int> newList = new List<int>();
-                        newList.Add(floorBacklog.TilesCollection.Count-1);
+                        newList.Add(floorBacklog.TilesCollection.Count - 1);
                         floorBacklog.EdgeMapping[firstPoint.Position] = newList;
                     }
+                    firstPoint = null;
                 }
+
             }
 
+
+
         }
+
+        private bool isDuplicateEdge(Edge edge)
+        {
+            foreach (int index in floorBacklog.EdgeMapping[firstPoint.Position])
+            {
+                if (((Edge)floorBacklog.TilesCollection[index]).V == edge.V)
+                { return true; }
+            }
+            return false;
+        }
+
+
         #endregion
     }
 }

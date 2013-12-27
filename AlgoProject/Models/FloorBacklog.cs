@@ -13,11 +13,35 @@ namespace AlgoProject.Models
     public class FloorBacklog : IList, ZoomableCanvas.ISpatialItemsSource
     {
         private static Coordinate floorDimensions;
+        private Tile source = null;
+        private Tile destination = null;
         #region fields
         //Collection storing tiles drawn until now
-        private ObservableCollection<Tile> tilesCollection;
+        private ObservableCollection<Shape> tilesCollection;
 
-        public ObservableCollection<Tile> TilesCollection
+        public Tile Destination
+        {
+            get
+            {
+                return destination;
+            }
+            set
+            {
+                destination = value;
+            }
+        }
+        public Tile Source
+        {
+            get
+            {
+                return source;
+            }
+            set
+            {
+                source = value;
+            }
+        }
+        public ObservableCollection<Shape> TilesCollection
         {
             get { return tilesCollection; }
         }
@@ -93,7 +117,7 @@ namespace AlgoProject.Models
 
         private void initializeTileCollection(Coordinate dimensions)
         {
-            tilesCollection = new ObservableCollection<Tile>();
+            tilesCollection = new ObservableCollection<Shape>();
             this.FloorDimensions = dimensions;
             for (int i = 0; i < dimensions.X * dimensions.Y; i++)
             {

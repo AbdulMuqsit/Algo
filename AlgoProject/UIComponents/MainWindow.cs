@@ -50,6 +50,7 @@ namespace AlgoProject.UIComponents
         ZoomableCanvas cvsFloor;
         //Left Panel//Right Panel//toolbar
         Button btnFinalTree;
+        Button btnDimensions;
         StackPanel stkLeft, stkRight, stkToolbar;
         Border brdFloorSurround;
         ListBox lstFloor;
@@ -106,7 +107,7 @@ namespace AlgoProject.UIComponents
             Grid.SetColumnSpan(rctTitleBar, 6);
             rctTitleBar.MouseLeftButtonDown += titleBar_MouseLeftButtonDown;
 
-            lblExitX = new Label() { Content = "X", FontSize = 20, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Foreground=Brushes.White, Margin= new Thickness(5) };
+            lblExitX = new Label() { Content = "X", FontSize = 15, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Foreground=Brushes.White, Margin= new Thickness(5) };
             brdExit = new Border() { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
             brdExit.MouseLeftButtonDown += ((s, e) => this.Close());
             Grid.SetColumn(brdExit, 5);
@@ -179,6 +180,9 @@ namespace AlgoProject.UIComponents
             Grid.SetRow(stkRight, 1);
             Grid.SetColumn(stkRight, 5);
 
+            btnDimensions = new Button() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MinHeight = 30, MinWidth = 100, Background = Brushes.Black, Content = "Get Floor Dimensions", Padding = new Thickness(5), Foreground = Brushes.White };
+            btnDimensions.Click += ((s, e) => { initiateNewFloor(); });
+
             cmbDimensions = new ComboBox() { HorizontalAlignment = HorizontalAlignment.Stretch, MinWidth = 100, Margin = new Thickness(5) };
 
             cvsGraph = new Canvas() { MinHeight = 200, MinWidth = 150, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch, Margin = new Thickness(5), Background = Brushes.White };
@@ -228,6 +232,7 @@ namespace AlgoProject.UIComponents
             stkLeft.Children.Add(txt2);
 
             stkRight.Children.Add(cmbDimensions);
+            stkRight.Children.Add(btnDimensions);
             stkRight.Children.Add(cvsGraph);
             stkRight.Children.Add(txtDebug);
             stkRight.Children.Add(btnFinalTree);
@@ -415,12 +420,16 @@ namespace AlgoProject.UIComponents
         //Window load event handler
         void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //on window's first load prompt the user for floor's dimensions, if user gives some draw the create a new floor backlog passing it's constructor 
+            initiateNewFloor();
+        }
+
+        private void initiateNewFloor()
+        {
+            //prompt the user for floor's dimensions, if user gives some draw the create a new floor backlog passing it's constructor 
             //the given dimensions and set the listFloor's (the list box in which floor is intended to be drawn) ItemsSource property to this newly created 
             //floorBacklog
             DimensionDialogBox dimensionDialogBox = new DimensionDialogBox(true, this);
             if ((bool)dimensionDialogBox.ShowDialog())
-
             {
                 floorBacklog = new FloorBacklog(this.Dimensions);
                 this.lstFloor.ItemsSource = floorBacklog;

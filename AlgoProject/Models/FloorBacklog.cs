@@ -17,7 +17,7 @@ namespace AlgoProject.Models
         private Tile destination = null;
         #region fields
         //Collection storing tiles drawn until now
-        private ObservableCollection<Shape> tilesCollection;
+        private ObservableCollection<Shape> shapesCollection;
 
         public Tile Destination
         {
@@ -41,9 +41,9 @@ namespace AlgoProject.Models
                 source = value;
             }
         }
-        public ObservableCollection<Shape> TilesCollection
+        public ObservableCollection<Shape> ShapesCollection
         {
-            get { return tilesCollection; }
+            get { return shapesCollection; }
         }
         List<Edge> edges = new List<Edge>();
 
@@ -115,15 +115,18 @@ namespace AlgoProject.Models
 
         #region methods
 
+
+        //for the given dimensions initialize the tiles collection with null
+        //so that later, tiles can be inserted at appropriate indexes
         private void initializeTileCollection(Coordinate dimensions)
         {
-            tilesCollection = new ObservableCollection<Shape>();
+            shapesCollection = new ObservableCollection<Shape>();
             this.FloorDimensions = dimensions;
             for (int i = 0; i < dimensions.X * dimensions.Y; i++)
             {
-                tilesCollection.Add(null);
+                shapesCollection.Add(null);
             }
-            tilesCollection.CollectionChanged += ((s, e) => { this.QueryInvalidated(this, EventArgs.Empty); });
+            shapesCollection.CollectionChanged += ((s, e) => { this.QueryInvalidated(this, EventArgs.Empty); });
 
 
         }
@@ -144,12 +147,13 @@ namespace AlgoProject.Models
             int maxVerticalPosition = (int)Math.Ceiling(VisibleArea.Bottom / Tile.Height);
             int maxHorizontalPosition = (int)Math.Ceiling(VisibleArea.Right / Tile.Width);
 
-            //calculating the indexes of items within the visible rectangle
-            //from starting point to closing point of visible rectangle, calculate the position of the tiles to be drawn
+           /// //calculating the indexes of items within the visible rectangle//////
+            //from starting point(xy) to closing point of visible rectangle, calculate the position of the tiles to be drawn
             //if a tile does not exist on the calculated index in the tiles collection, create a tile 
             //give it coordinates and insert it to the collection of tiles at calculated index.
             //log the calculated index into list of integers.
-            //after the both loops end, return the list of calculated indexes
+            //also by the mapping dictionary check either there is any edge originating from a visible tile, if so include it's index too in the list of indexes
+            //after both loops end, return the list of calculated indexes
             for (int i = initialVerticalPosition; i < maxVerticalPosition; i++)
             {
                 for (int j = initialHorizontalPosition; j < maxHorizontalPosition; j++)
@@ -157,11 +161,11 @@ namespace AlgoProject.Models
 
                     int currentPosition = (int)(i * FloorDimensions.X) + j;
 
-                    if (tilesCollection[currentPosition] == null)
+                    if (shapesCollection[currentPosition] == null)
                     {
 
                         tile = new Tile() { Type = ShapeType.Clear, Location = new Coordinate() { X = j, Y = i } };
-                        tilesCollection[currentPosition] = tile;
+                        shapesCollection[currentPosition] = tile;
 
                     }
                     ((List<int>)indexes).Add(currentPosition);
@@ -190,16 +194,20 @@ namespace AlgoProject.Models
         #endregion
 
         #region indexer
+
+        //whenever an item is asked from floorBacklog through array syntax this indexer is used
+
+        //Note: after calling the query method of this class and getting the indexes of shapes to be drawn, the list box gets each and every item by this indexer
         public object this[int i]
         {
             get
             {
 
-                return  tilesCollection[i];
+                return  shapesCollection[i];
             }
             set
             {
-                tilesCollection[i] = (Tile)value;
+                shapesCollection[i] = (Tile)value;
 
             }
         }

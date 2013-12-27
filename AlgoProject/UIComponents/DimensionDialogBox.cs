@@ -131,7 +131,7 @@ namespace AlgoProject.UIComponents
                 this.DialogResult = true;
                 this.Close();
             });
-            btnCancel.Click += ((s, eve) => { this.DialogResult = false; this.Close(); });
+            btnCancel.Click += ((s, eve) => { this.DialogResult = false; this.Close(); Owner.IsEnabled = true; });
         }
 
         //validation helper function.

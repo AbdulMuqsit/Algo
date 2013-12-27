@@ -50,8 +50,8 @@ namespace AlgoProject.Models
         }
         public override double Top { get { return Location.Y * Height; } }
         public override double Left { get { return Location.X * Width; } }
-        public static int Width { get; private set; }
-        public static int Height { get; private set; }
+        public new static int Width { get; private set; }
+        public new static int Height { get; private set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public bool IsTraversed { get; set; }

@@ -34,6 +34,7 @@ namespace AlgoProject.UIComponents
         StackPanel pnlTitleBar;
         Label lblTitle;
         Label lblExitX;
+        Border brdExit;
         DrawingVisual vslMaximize;
         Label lblminimize;
 
@@ -47,7 +48,7 @@ namespace AlgoProject.UIComponents
         Tile firstPoint = null;
 
         ZoomableCanvas cvsFloor;
-        //Left Panel
+        //Left Panel//Right Panel//toolbar
         Button btnFinalTree;
         StackPanel stkLeft, stkRight, stkToolbar;
         Border brdFloorSurround;
@@ -64,8 +65,6 @@ namespace AlgoProject.UIComponents
         StackPanel stkLeftInternal;
         Rectangle rctClear, rctWayPoint, rctHurdle, rctInitialPoint, rctDestination;
         Line linEdge;
-
-        //Right Panel
 
 
         #region properties
@@ -87,6 +86,8 @@ namespace AlgoProject.UIComponents
             this.Loaded += Window_Loaded;
 
         }
+
+        //capturing the canvas on the back of lstFloor for later use
         void loaded(object sender, RoutedEventArgs e)
         {
             cvsFloor = sender as ZoomableCanvas;
@@ -105,6 +106,10 @@ namespace AlgoProject.UIComponents
             Grid.SetColumnSpan(rctTitleBar, 6);
             rctTitleBar.MouseLeftButtonDown += titleBar_MouseLeftButtonDown;
 
+            lblExitX = new Label() { Content = "X", FontSize = 20, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Foreground=Brushes.White, Margin= new Thickness(5) };
+            brdExit = new Border() { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
+            brdExit.MouseLeftButtonDown += ((s, e) => this.Close());
+            Grid.SetColumn(brdExit, 5);
             //label
             lblTitle = new Label() { Content = "Floor Covering Simulator", VerticalContentAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left, Foreground = Brushes.White, FontSize = 14 };
             Grid.SetColumnSpan(lblTitle, 6);
@@ -205,6 +210,8 @@ namespace AlgoProject.UIComponents
             Grid.SetColumn(brdFloorSurround, 3);
 
             //building visual tree of the window
+            brdExit.Child = lblExitX;
+
             stkToolbar.Children.Add(rctWayPoint);
             stkToolbar.Children.Add(rctHurdle);
             stkToolbar.Children.Add(rctClear);
@@ -226,8 +233,10 @@ namespace AlgoProject.UIComponents
             stkRight.Children.Add(btnFinalTree);
             stkRight.Children.Add(cmbDown);
 
+
             grdMain.Children.Add(rctTitleBar);
             grdMain.Children.Add(lblTitle);
+            grdMain.Children.Add(brdExit);
             grdMain.Children.Add(splitterLeft);
             grdMain.Children.Add(splitterRight);
             grdMain.Children.Add(rctStatusBar);
@@ -237,15 +246,27 @@ namespace AlgoProject.UIComponents
             grdMain.Children.Add(stkRight);
             brdSurround.Child = grdMain;
             grdMain.Children.Add(stkToolbar);
+
+            //add everything to MainWindow
             this.Content = brdSurround;
         }
 
+        //event handler for calculate path button
         void btnFinalTree_Click(object sender, RoutedEventArgs e)
         {
+            if (floorBacklog == null || floorBacklog.Edges == null || floorBacklog.Source== null)
+            {
+                return;
+            }
+            
+            //call bellmanFord Function with the list of all edges and initial point 
             BellmanFord.MakeBellmanFordTree(floorBacklog.Edges, floorBacklog.Source);
+
 
             Tile vertex = floorBacklog.Destination;
 
+
+            //start from destination and until source is not reached color all the vertices in the way orange (using converting tile into destination as shortcut to painting orange, as destination tiles already have a style, containing orange foreground
             while (vertex.Parent != null)
             {
                 vertex.Type = ShapeType.Destination;
@@ -253,6 +274,12 @@ namespace AlgoProject.UIComponents
             }
         }
 
+        #region ToolBar's buttons's event handlers
+
+        //when a button is clicked on the tool bar it's style is changed to make a click effect, private member selectedType is set to appropriate related 
+        //type of next shape to be drawn
+        //also other buttons on tool bar  are reset
+        //if user has changed the tool while drawing an edge then the firstPoint will be lost!
         void linEdge_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             selectedType = ShapeType.Edge;
@@ -332,6 +359,11 @@ namespace AlgoProject.UIComponents
             firstPoint = null;
 
         }
+        #endregion
+
+        //mouse move event on list
+        //if left button is pressed while moving mouse on the floor the hit tile is converted into hurdle
+        //giving a smooth experience
         void lstFloor_MouseMove(object sender, MouseEventArgs e)
         {
             Tile selectedItem = ((ListBox)sender).SelectedItem as Tile;
@@ -343,6 +375,7 @@ namespace AlgoProject.UIComponents
 
 
         //function to add row and column definitions to main grid
+        //this grid and in turn MainWindow contains 6 columns and 4 rows for various control's placement
         private void addMainGridDefinitions()
         {
             //adding row definitions
@@ -382,11 +415,21 @@ namespace AlgoProject.UIComponents
         //Window load event handler
         void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            DimensionDialogBox dimensionDialogBox = new DimensionDialogBox(false, this);
-            dimensionDialogBox.ShowDialog();
-            floorBacklog = new FloorBacklog(this.Dimensions);
-            this.lstFloor.ItemsSource = floorBacklog;
+            //on window's first load prompt the user for floor's dimensions, if user gives some draw the create a new floor backlog passing it's constructor 
+            //the given dimensions and set the listFloor's (the list box in which floor is intended to be drawn) ItemsSource property to this newly created 
+            //floorBacklog
+            DimensionDialogBox dimensionDialogBox = new DimensionDialogBox(true, this);
+            if ((bool)dimensionDialogBox.ShowDialog())
+
+            {
+                floorBacklog = new FloorBacklog(this.Dimensions);
+                this.lstFloor.ItemsSource = floorBacklog;
+            }
         }
+
+        //tittle bar's click event handler 
+        //double click to maximize/ restore
+        //click and drag
         private void titleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2 && Application.Current.MainWindow.WindowState == WindowState.Maximized)
@@ -400,85 +443,103 @@ namespace AlgoProject.UIComponents
             Application.Current.MainWindow.DragMove();
 
         }
+
+
+        //event handler for a click inside the floor(sorry for so much if else statements, there was no time to apply proposition logic and shorten the statements)
         private void lstBoxMouseDown(object sender, MouseButtonEventArgs e)
         {
+            //Cast clicked item into Shape
             AlgoProject.Models.Shape selectedItem = (((ListBox)sender).SelectedItem) as AlgoProject.Models.Shape;
 
+            //should the type of shape be changed? if yes then change it to selected item in the tool bar except the case that selected item is edge
             if (selectedItem != null && selectedType != null && selectedType != ShapeType.Edge && selectedItem.Type != selectedType)
             {
-
+                //if a destination tile is replaced then there is no more destination
                 if (selectedItem.Type == ShapeType.Destination)
                 {
                     floorBacklog.Destination = null;
 
                 }
+                    //if initial point is replaced then there is no more source
                 else if (selectedItem.Type == ShapeType.InitialPoint)
                 {
                     floorBacklog.Source = null;
                 }
 
+                //only create initial point if there is none before
                 if (selectedType == ShapeType.InitialPoint && floorBacklog.Source == null)
                 {
                     selectedItem.Type = (ShapeType)selectedType;
                     floorBacklog.Source = (Tile)selectedItem;
                 }
+                    //there can be only one destination point
                 else if (selectedType == ShapeType.Destination && floorBacklog.Destination == null)
                 {
                     selectedItem.Type = (ShapeType)selectedType;
                     floorBacklog.Destination = (Tile)selectedItem;
                 }
+                    //every else tile
                 else if (selectedType == ShapeType.WayPoint || selectedType == ShapeType.Clear || selectedType == ShapeType.Obstacle)
                 {
                     selectedItem.Type = (ShapeType)selectedType;
 
                     floorBacklog.WayPoints.Add((Tile)selectedItem);
 
-
                 }
 
-
-
             }
+                //if selected item is edge in the tool bar then  draw the edge, also edge can not be drawn on a clear tile and an obstacle
             else if (selectedType == ShapeType.Edge && selectedItem.Type != ShapeType.Clear && selectedItem.Type != ShapeType.Obstacle)
             {
+
+                //firstPoint is a private member variable to remember the first click of the user on a tile, when user is trying to draw an edge, if it is null then it means user is starting a new edge
+                //so assign currently selected item to this global variable
                 if (firstPoint == null)
                 {
                     firstPoint = (Tile)selectedItem;
                 }
+                //if first point is not null then this means that user has clicked the second tile, while making the edge, so make a new object of Edge class
+                //  passing it's constructor the firstPoint and currently selected tile as argument (They will be U and V of the edge respectively.... see Edge class)
 
+                    //Note: as the listBox's ItemsSource is set to an object of floorBacklog, also floorBacklog returns items from it's tilesCollection 
+                    ///whenever it's indexer is used. Also we have to draw the edges on the Tiles, inside the listBox ,so we have to put the edges inside 
+                    ////floorBackg's tilesCollection 
+                    //But as this same collection contains the tiles to be drawn on the screen and also each tile can have many edges originating from it, so
+                     //we have to map the indexes of elements inside tilesCollection, which contain these edges, to the related tile
+                    //For this mapping a key having value, equal to index of a tile and against it, a list containing the indexes of the tilesCollection 
+                    //containing the edges originating from this tile are added to a dictionary of key value paries(floorBackLog.EdgeMapping the type of 
+                    //which is a dictionary having integer keys and against them list of integer values)
                 else
                 {
                     Edge edge = new Edge((Tile)firstPoint, (Tile)selectedItem);
-
+                    //if a key value payer already exists then there is already a list of integers in the dictionary against current tile(position of current Tile which is an integer) so add the new index in already existing list
                     if (floorBacklog.EdgeMapping.ContainsKey(firstPoint.Position) && !isDuplicateEdge(edge) && edge.U != edge.V)
                     {
-                        floorBacklog.TilesCollection.Add(edge);
+                        floorBacklog.ShapesCollection.Add(edge);
                         floorBacklog.Edges.Add(edge);
-                        floorBacklog.EdgeMapping[firstPoint.Position].Add((floorBacklog.TilesCollection.Count - 1));
+                        floorBacklog.EdgeMapping[firstPoint.Position].Add((floorBacklog.ShapesCollection.Count - 1));
                     }
-
+                    //else there is no list against current tile(there is no edge originating from this tile before) so create a new list, add to it the index of newly created edge's location and put the key value paire in mapping dictionary
                     else if (!floorBacklog.EdgeMapping.ContainsKey(firstPoint.Position) && edge.U != edge.V)
                     {
-                        floorBacklog.TilesCollection.Add(edge);
+                        floorBacklog.ShapesCollection.Add(edge);
                         floorBacklog.Edges.Add(edge);
                         List<int> newList = new List<int>();
-                        newList.Add(floorBacklog.TilesCollection.Count - 1);
+                        newList.Add(floorBacklog.ShapesCollection.Count - 1);
                         floorBacklog.EdgeMapping[firstPoint.Position] = newList;
                     }
                     firstPoint = null;
                 }
-
             }
-
-
-
         }
 
+
+        //if a given edge exists in the collection of edges, this function returns true, else false
         private bool isDuplicateEdge(Edge edge)
         {
             foreach (int index in floorBacklog.EdgeMapping[firstPoint.Position])
             {
-                if (((Edge)floorBacklog.TilesCollection[index]).V == edge.V)
+                if (((Edge)floorBacklog.ShapesCollection[index]).V == edge.V)
                 { return true; }
             }
             return false;

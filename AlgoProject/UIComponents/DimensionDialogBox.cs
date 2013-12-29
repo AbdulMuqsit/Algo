@@ -143,7 +143,7 @@ namespace AlgoProject.UIComponents
             TextBox theOther = sender as TextBox == txtX ? txtY : txtX;
 
 
-            if ((e.Key == Key.Tab && Int32.TryParse(theOther.Text, out x)) || (Int32.TryParse(theSender.Text, out x) && theOther.Text == "" && e.Key != Key.Tab))
+            if (((e.Key == Key.Tab && Int32.TryParse(theOther.Text, out x) && x > 0) || (Int32.TryParse(theSender.Text, out x) && theOther.Text == "" && e.Key != Key.Tab)))
             {
                 setValidationViewer(lblException, btnOk, null, Visibility.Collapsed, false);
             }
@@ -153,7 +153,7 @@ namespace AlgoProject.UIComponents
                 setValidationViewer(lblException, btnOk, "Floor dimensions must be specified.", Visibility.Visible, false);
             }
 
-            else if (point.HasValue && point.Value.X * point.Value.Y <= 1000000)
+            else if (point.HasValue && point.Value.X * point.Value.Y <= 1000000 && point.Value.X >= 0 && point.Value.Y >=0)
             {
                 setValidationViewer(lblException, btnOk, null, Visibility.Collapsed, true);
             }
